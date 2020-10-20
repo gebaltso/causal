@@ -19,8 +19,8 @@ import random
 
 def messagePropagation(n, N, k, G):
     
-    # initialize the T containing the edges already visited
-    T = set()
+    # initialize the T containing the nodes already visited
+    T = []
     
 #    # initialize the weight dict
 #    weightDict = defaultdict(dict)
@@ -30,37 +30,37 @@ def messagePropagation(n, N, k, G):
     
     while N < k and G.number_of_nodes() > len(T) :
          
-        # find the adjacent edges to node un        
-        neiOfn = set(G.edges(n))
-       
+        # find the adjacent nodes to node un        
+        neiOfn = list(G.neighbors(n))
                 
-        # Ihat is the set of edges that haven't been visited yet        
-        Ihat = neiOfn - T
-
+        # Ihat is the list of neighbour nodes that haven't been visited yet
+        Ihat = neiOfn
+        for i in T:
+            Ihat.remove(i)
         
 #        # weight = 1 for all edges in Ihat
 #        for i in Ihat:
 #            weightDict[i] = 1                             
         
-        
-        sumOfW = 0
-        for i in Ihat:                         
-            sumOfW = sumOfW + 1 
-     
-        print(sumOfW)
-        
+  
         Pr = defaultdict(dict)
         for i in Ihat:
-            Pr[i] = G.degree[i]/sumOfW
+            Pr[i] = 1/G.degree[i]
+            
+        print(Pr)
+        
+        
             
         # find the index of the edge at random way considering the probabilities of edges    
-        newUnIndex = (np.random.choice(len((Pr.keys())), p=list(Pr.values())))
+        newnIndex = (np.random.choice(list(Pr.keys()), p=list(Pr.values())))
+        
+        print(newnIndex)
         
         # find the exact edge from the above index
-        newUn = list(Pr)[newUnIndex]
+        newn = list(Pr)[newnIndex]
         
         # find the node reached by the above edge
-        newNode = newUn[1]  
+        newNode = newn[1]  
         
         
 #        # increase by 1 the weight of the above edge        
@@ -69,7 +69,7 @@ def messagePropagation(n, N, k, G):
 #        weightDict[newUn] += 1
         
         # add the edge to the visited edges        
-        T.add(newUn)        
+        T.add(newn)        
         
         # un is now the new edge
         n = newNode
@@ -103,11 +103,12 @@ for key in Graph:
                         
 
 
-##############################################################################################################
+###############################################################################################################
 #import networkx as nx
 #import random
 #import matplotlib.pyplot as plt
 #import operator
+#import numpy as np
 #
 ##select random graph using gnp_random_graph() function of networkx
 #Graph = nx.karate_club_graph()
@@ -117,16 +118,16 @@ for key in Graph:
 #
 ## random_node is the start node selected randomly
 ##random_node = random.choice([i for i in range(Graph.number_of_nodes())])
-#random_node = 10
+#random_node = 29
 #dict_counter = {} #initialise the value for all nodes as 0
 #for i in range(Graph.number_of_nodes()):
 #    dict_counter[i] = 0
-## increment by traversing through all neighbors nodes
+## increment by traversing through all neighbor nodes
 #dict_counter[random_node] = dict_counter[random_node]+1
 #
 #
 ##Traversing through the neighbors of start node
-#for i in range(3):
+#for i in range(10):
 #    list_for_nodes = list(Graph.neighbors(random_node))
 #    if len(list_for_nodes)==0:# if random_node having no outgoing edges
 #        random_node = random.choice([i for i in range(Graph.number_of_nodes())])
@@ -134,8 +135,7 @@ for key in Graph:
 #    else:
 #        random_node = random.choice(list_for_nodes) #choose a node randomly from neighbors
 #        dict_counter[random_node] = dict_counter[random_node]+1
-#
-#print(dict_counter)     
+# 
 #
 ## using pagerank() method to provide ranks for the nodes        
 #rank_node = nx.pagerank(Graph)
@@ -144,11 +144,39 @@ for key in Graph:
 ##sorting the values of rank and random walk of respective nodes
 #sorted_rank = sorted(rank_node.items(), key=operator.itemgetter(1))
 #sorted_random_walk = sorted(dict_counter.items(), key=operator.itemgetter(1))
+#
 #print(sorted_rank)
 #print(sorted_random_walk)
 #############################################################################################################
 
+#import networkx as nx
+#import numpy as np
+#import random
+#
+#
+#G = nx.karate_club_graph()
+#
+#pr = nx.pagerank_numpy(G, personalization={29: 1})
+#
+#next_node = np.random.choice(list(pr.keys()), p=list(pr.values())) 
+#
+#print(next_node)
 
+#num_walks=10 #number of walks (iteration times)
+#num_steps=2 #length of walks
+#
+#walks = list()
+#i = 10 #the starting node
+#for walk in range(num_walks):
+#    curr_walk = [i]
+#    curr = i
+#    for step in range(num_steps):
+#        neighbors = list(G.neighbors(curr))
+#        if len(neighbors) > 0:
+#            curr = random.choice(neighbors)
+#        curr_walk.append(curr)
+#    walks.append(curr_walk)
+#print(walks)
 
 
 
