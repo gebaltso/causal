@@ -17,89 +17,89 @@ import sys
 import random
 
 
-def messagePropagation(n, N, k, G):
-    
-    # initialize the T containing the nodes already visited
-    T = []
-    
-#    # initialize the weight dict
-#    weightDict = defaultdict(dict)
-    
-    # initialize the probability dictionary
-    Pr = defaultdict(dict)
-    
-    while N < k and G.number_of_nodes() > len(T) :
-         
-        # find the adjacent nodes to node un        
-        neiOfn = list(G.neighbors(n))
-                
-        # Ihat is the list of neighbour nodes that haven't been visited yet
-        Ihat = neiOfn
-        for i in T:
-            Ihat.remove(i)
-        
-#        # weight = 1 for all edges in Ihat
+#def messagePropagation(n, N, k, G):
+#    
+#    # initialize the T containing the nodes already visited
+#    T = []
+#    
+##    # initialize the weight dict
+##    weightDict = defaultdict(dict)
+#    
+#    # initialize the probability dictionary
+#    Pr = defaultdict(dict)
+#    
+#    while N < k and G.number_of_nodes() > len(T) :
+#         
+#        # find the adjacent nodes to node un        
+#        neiOfn = list(G.neighbors(n))
+#                
+#        # Ihat is the list of neighbour nodes that haven't been visited yet
+#        Ihat = neiOfn
+#        for i in T:
+#            Ihat.remove(i)
+#        
+##        # weight = 1 for all edges in Ihat
+##        for i in Ihat:
+##            weightDict[i] = 1                             
+#        
+#  
+#        Pr = defaultdict(dict)
 #        for i in Ihat:
-#            weightDict[i] = 1                             
-        
-  
-        Pr = defaultdict(dict)
-        for i in Ihat:
-            Pr[i] = 1/G.degree[i]
-            
-        print(Pr)
-        
-        
-            
-        # find the index of the edge at random way considering the probabilities of edges    
-        newnIndex = (np.random.choice(list(Pr.keys()), p=list(Pr.values())))
-        
-        print(newnIndex)
-        
-        # find the exact edge from the above index
-        newn = list(Pr)[newnIndex]
-        
-        # find the node reached by the above edge
-        newNode = newn[1]  
-        
-        
-#        # increase by 1 the weight of the above edge        
-#        Graph[un][newNode] += 1
-#        Graph[newNode][un] += 1
-#        weightDict[newUn] += 1
-        
-        # add the edge to the visited edges        
-        T.add(newn)        
-        
-        # un is now the new edge
-        n = newNode
-        
-        #increase N by 1
-        N += 1
-        
-        
-    return G
-    
-
-    
-G = nx.karate_club_graph()
-
-# depends on the preferred community size and depicts how many random walks will be held
-p = 10 
-      
-k = 10
- 
-n = 9               
-    
-for i in range(1, p+1):
-    N = 0 #counter to check the length of the k-path
-                    
-    Graph = messagePropagation(n, N, k, G)
-                
-            
-for key in Graph:
-    for i in Graph[key]:
-        Graph[key][i] = Graph[key][i]/p
+#            Pr[i] = 1/G.degree[i]
+#            
+#        print(Pr)
+#        
+#        
+#            
+#        # find the index of the edge at random way considering the probabilities of edges    
+#        newnIndex = (np.random.choice(list(Pr.keys()), p=list(Pr.values())))
+#        
+#        print(newnIndex)
+#        
+#        # find the exact edge from the above index
+#        newn = list(Pr)[newnIndex]
+#        
+#        # find the node reached by the above edge
+#        newNode = newn[1]  
+#        
+#        
+##        # increase by 1 the weight of the above edge        
+##        Graph[un][newNode] += 1
+##        Graph[newNode][un] += 1
+##        weightDict[newUn] += 1
+#        
+#        # add the edge to the visited edges        
+#        T.add(newn)        
+#        
+#        # un is now the new edge
+#        n = newNode
+#        
+#        #increase N by 1
+#        N += 1
+#        
+#        
+#    return G
+#    
+#
+#    
+#G = nx.karate_club_graph()
+#
+## depends on the preferred community size and depicts how many random walks will be held
+#p = 10 
+#      
+#k = 10
+# 
+#n = 9               
+#    
+#for i in range(1, p+1):
+#    N = 0 #counter to check the length of the k-path
+#                    
+#    Graph = messagePropagation(n, N, k, G)
+#                
+#            
+#for key in Graph:
+#    for i in Graph[key]:
+#        Graph[key][i] = Graph[key][i]/p
                         
 
 
