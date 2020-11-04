@@ -19,11 +19,12 @@ import random
 
 def loadGraph():
     
-    G = nx.les_miserables_graph()
+#    G = nx.les_miserables_graph()
+    G = nx.karate_club_graph()
     
     # Check if node ids are integers. If not convert them to integers
     if all(isinstance(n, int) for n in list(G.nodes)):
-        print("True")
+        print("true")
     else:
         start = 0
         G = nx.convert_node_labels_to_integers(G,first_label=start,ordering='sorted')

@@ -37,9 +37,18 @@ communities_dict = {c: [k for k, v in partition.items() if v == c] for c in comm
 # Compute the endogenous set (via random walks). Give as parameters the graph, 
 # the number of random walks, the length of the random walks and the initial node
 # returns E which is the list of all the random walks and endoEdges which is the set of edges in these walks
-E, endoEdges = endogenous(G, 10, 3, 48)
+E, endoEdges = endogenous(G, 10, 3, 9)
+
+print(E)
+print(endoEdges)
 
 
-# Compute the metric M for the above results
-M = metric(72, partition, communities_dict, G)
+# Keep the nodes of the above endoEdges set in endoNodes list
+flat_E = [item for sublist in E for item in sublist]
+endoNodes = list((set(flat_E)))
+
+
+# Compute the metric M for the above results and node as 1rst parameter
+# the 1rst parameter should be changed to every(?) node of endoEdges
+M = metric(17, partition, communities_dict, G)
 

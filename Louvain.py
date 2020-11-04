@@ -18,9 +18,8 @@ def Louvain(G):
     partition = community_louvain.best_partition(G)
     modularity = community_louvain.modularity(partition, G)
     
-    
-    return partition, modularity
-
+#    print("Q=", modularity)
+#    
 #    # draw the graph
 #    pos = nx.spring_layout(G)
 #    # color the nodes according to their partition
@@ -31,3 +30,7 @@ def Louvain(G):
 #    nx.draw_networkx_labels(G,pos,font_size=7)
 #    #plt.savefig("plot.png", dpi=1000)
 #    plt.show()
+    
+    return partition, modularity
+
+

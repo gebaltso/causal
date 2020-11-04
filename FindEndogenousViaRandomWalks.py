@@ -72,8 +72,10 @@ def endogenous(G, p, k, n):
         allTheWalks.append(walk)
         allEndogenous.append(addingEdge)
      
+        
     # Create flat list to make one list from a list with lists    
     flat_list = [item for sublist in allEndogenous for item in sublist]
+
     
     # Return the walks and the set of endogenous edges without double items
     # If I want a list again should use list(set(flat_list))
