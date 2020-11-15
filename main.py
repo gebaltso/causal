@@ -12,16 +12,12 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from collections import defaultdict
-import copy
-import sys
-import random
 import itertools
 from loadGraph import loadGraph
 from Louvain import Louvain
 from FindEndogenousViaRandomWalks import endogenous
-from metric import metric
-from networkx.utils import not_implemented_for
-from networkx.algorithms.community.community_utils import is_partition
+from rankMetricM import rankMetricM
+from rankMetricRC import rankMetricRC
 
 
 
@@ -40,13 +36,15 @@ initnode = 9 #the initial query node
 
 # select how to compute the endogenous set
 method = 'incomm' 
+rankMetric = 'rc'
+
+##########################################################################################
 
 if method == 'exo':
     # the user gives the endogenous set exogenously
     endoEdges = {(4,5),(5,6),(3,6)}
     endoNodes = set(itertools.chain.from_iterable(list(endoEdges)))
-
-    
+        
 elif method == 'random':
     # Compute the endogenous set via random walks. Give as parameters the graph, 
     # the number of random walks, the length of the random walks and the initial node
@@ -85,8 +83,14 @@ elif method == 'incomm':
     endoNodes = set(itertools.chain.from_iterable(list(endoEdges)))
     endoNodes.remove(initnode) # remove the initial node as G.edges include it
 
+###########################################################################################
 
-# Compute the metric M for the above results and node as 1rst parameter
-# the 1rst parameter should be changed to every(?) node of endoEdges
-M = metric(17, partition, communities_dict, G)
+if rankMetric == 'emb':
+    # Compute the metric M for the above results and node as 1rst parameter
+    # the 1rst parameter should be changed to every(?) node of endoEdges
+    M = rankMetricM(17, partition, communities_dict, G)
+    
+elif rankMetric == 'rc':
+    M = rankMetricRC(33, partition, communities_dict, G)
+    print(M)
 

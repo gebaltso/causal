@@ -6,19 +6,13 @@ Created on Thu Oct 29 16:32:37 2020
 @author: georgiabaltsou
 """
 
-import community as community_louvain
-import matplotlib.cm as cm
-import matplotlib.pyplot as plt
+
 import networkx as nx
-import numpy as np
 from collections import defaultdict
-import copy
-import sys
-import random
 import operator
 
 
-def metric(n, partition, communities_dict, G):
+def rankMetricM(n, partition, communities_dict, G):
     
     # Find the community C that node n belongs
     C = partition.get(n)

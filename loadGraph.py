@@ -24,7 +24,7 @@ def loadGraph():
     
     # Check if node ids are integers. If not convert them to integers
     if all(isinstance(n, int) for n in list(G.nodes)):
-        print("true")
+        print(" ")
     else:
         start = 0
         G = nx.convert_node_labels_to_integers(G,first_label=start,ordering='sorted')
