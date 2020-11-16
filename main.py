@@ -26,16 +26,22 @@ G = loadGraph()
 
 # Compute the best partition
 partition, Q = Louvain(G)
-#print("Modularity of Louvain partioning is:", Q)
+#partition = {0: 0, 1: 0, 2: 0, 3: 0, 4: 1, 5: 1, 6: 1, 7: 0, 8: 2, 9: 2, 10: 1, 11: 0, 12: 0, 13: 0, 14: 2, 15: 2, 16: 1, 17: 0, 18: 2, 19: 0, 20: 2, 21: 0, 22: 2, 23: 3, 24: 3, 25: 3, 26: 2, 27: 3, 28: 3, 29: 2, 30: 2, 31: 3, 32: 2, 33: 2}
+print("Modularity of Louvain partioning is:", Q)
+#print(partition)
 
 # communities_dict contains the communities and nodes of each community
 communities = set(partition.values())
 communities_dict = {c: [k for k, v in partition.items() if v == c] for c in communities}
 
-initnode = 9 #the initial query node
+# The initial query node
+initnode = 8 
+
+# The number of items to examine as causal (selected from endogenous)
+nOfCausal = 3 
 
 # select how to compute the endogenous set
-method = 'incomm' 
+method = 'incident' 
 rankMetric = 'rc'
 
 ##########################################################################################
@@ -52,10 +58,7 @@ elif method == 'random':
     nrw = 10 #number of random walks
     l = 3 #length of random walks
     E, endoEdges = endogenous(G, nrw, l, initnode)
-    
-#    print("Random walks of length ", l, ": ", E)
-#    print("Edges induced by the previous random walks: ", endoEdges)
-    
+        
     # Keep the nodes of the above endoEdges set in endoNodes list
     flat_E = [item for sublist in E for item in sublist]
     endoNodes = list((set(flat_E)))
@@ -85,12 +88,59 @@ elif method == 'incomm':
 
 ###########################################################################################
 
+# Dictionary to keep nodes of endoNodes and their corresponding M values
+# in order to select which edges to examine as causal
+possibleCausal = defaultdict(dict)
+finalCausalNodes = []
+
+# The edges that will be examined as causal
+CausalEdges = []
+
+# Compute the metric M for the endoNodes found before
 if rankMetric == 'emb':
-    # Compute the metric M for the above results and node as 1rst parameter
-    # the 1rst parameter should be changed to every(?) node of endoEdges
-    M = rankMetricM(17, partition, communities_dict, G)
+    for i in endoNodes:
+        possibleCausal[i] = rankMetricM(i, partition, communities_dict, G)
+    sortedPossibleCausal = {k: v for k, v in sorted(possibleCausal.items(), key=lambda item: item[1], reverse=True)}
+    finalCausalNodes = list(sortedPossibleCausal)[0:nOfCausal]
+    for e in list(endoEdges):
+        if (e[0] in finalCausalNodes) or (e[1] in finalCausalNodes):
+            CausalEdges.append(e)
+
     
 elif rankMetric == 'rc':
-    M = rankMetricRC(33, partition, communities_dict, G)
-    print(M)
+    for i in endoNodes:
+        possibleCausal[i] = rankMetricRC(i, partition, communities_dict, G)
+    sortedPossibleCausal = {k: v for k, v in sorted(possibleCausal.items(), key=lambda item: item[1], reverse=True)}
+#    print(sortedPossibleCausal)
+    finalCausalNodes = list(sortedPossibleCausal)[0:nOfCausal]
+    for e in list(endoEdges):
+        if (e[0] in finalCausalNodes) or (e[1] in finalCausalNodes):
+            CausalEdges.append(e)
 
+###########################################################################################
+ 
+print("The edges that will be examined as causal are: ", CausalEdges)
+                           
+# Remove from G the edges proposed as causal and re-run community detection algorithm
+G.remove_edge(CausalEdges[1][0], CausalEdges[1][1])
+G.remove_edge(CausalEdges[2][0], CausalEdges[2][1])
+partition2, Q2 = Louvain(G)  
+
+print("Modularity of Louvain partioning is:", Q2)
+#if partition2[initnode] != partition[initnode]:
+#    print("The query node changed community and gone to: ", partition2[initnode])
+    
+# Find all the nodes that have changed communities
+nodesChanged = []
+for i in partition:
+    if partition2[i] != partition[i]:
+        nodesChanged.append(i)
+            
+print("The nodes that due to causals have changed communities: ", nodesChanged)
+    
+# Compute 
+    
+    
+    
+    
+    
