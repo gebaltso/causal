@@ -13,21 +13,27 @@ import networkx as nx
 import numpy as np
 from collections import defaultdict
 import itertools
+from itertools import combinations
 from loadGraph import loadGraph
 from Louvain import Louvain
 from FindEndogenousViaRandomWalks import endogenous
 from rankMetricM import rankMetricM
 from rankMetricRC import rankMetricRC
+import sys
+import copy
 
 
 
 # Load the graph
 G = loadGraph()
 
+# Number of nodes of the initial G 
+nodesLen = len(G.nodes())
+
 # Compute the best partition
 partition, Q = Louvain(G)
 #partition = {0: 0, 1: 0, 2: 0, 3: 0, 4: 1, 5: 1, 6: 1, 7: 0, 8: 2, 9: 2, 10: 1, 11: 0, 12: 0, 13: 0, 14: 2, 15: 2, 16: 1, 17: 0, 18: 2, 19: 0, 20: 2, 21: 0, 22: 2, 23: 3, 24: 3, 25: 3, 26: 2, 27: 3, 28: 3, 29: 2, 30: 2, 31: 3, 32: 2, 33: 2}
-print("Modularity of Louvain partioning is:", Q)
+print("Modularity of Louvain partioning is:", Q, "\n")
 #print(partition)
 
 # communities_dict contains the communities and nodes of each community
@@ -35,14 +41,14 @@ communities = set(partition.values())
 communities_dict = {c: [k for k, v in partition.items() if v == c] for c in communities}
 
 # The initial query node
-initnode = 8 
+initnode = 5 
 
 # The number of items to examine as causal (selected from endogenous)
 nOfCausal = 3 
 
 # select how to compute the endogenous set
-method = 'incident' 
-rankMetric = 'rc'
+method = 'random' 
+rankMetric = 'emb'
 
 ##########################################################################################
 
@@ -104,7 +110,8 @@ if rankMetric == 'emb':
     finalCausalNodes = list(sortedPossibleCausal)[0:nOfCausal]
     for e in list(endoEdges):
         if (e[0] in finalCausalNodes) or (e[1] in finalCausalNodes):
-            CausalEdges.append(e)
+            if (e[1],e[0]) not in CausalEdges: # this is to avoid adding both (a,b) & (b,a)
+                CausalEdges.append(e)
 
     
 elif rankMetric == 'rc':
@@ -115,32 +122,194 @@ elif rankMetric == 'rc':
     finalCausalNodes = list(sortedPossibleCausal)[0:nOfCausal]
     for e in list(endoEdges):
         if (e[0] in finalCausalNodes) or (e[1] in finalCausalNodes):
-            CausalEdges.append(e)
+            if (e[1],e[0]) not in CausalEdges:
+                CausalEdges.append(e)
+
+
 
 ###########################################################################################
- 
-print("The edges that will be examined as causal are: ", CausalEdges)
-                           
-# Remove from G the edges proposed as causal and re-run community detection algorithm
-G.remove_edge(CausalEdges[1][0], CausalEdges[1][1])
-G.remove_edge(CausalEdges[2][0], CausalEdges[2][1])
-partition2, Q2 = Louvain(G)  
-
-print("Modularity of Louvain partioning is:", Q2)
-#if partition2[initnode] != partition[initnode]:
-#    print("The query node changed community and gone to: ", partition2[initnode])
-    
-# Find all the nodes that have changed communities
-nodesChanged = []
-for i in partition:
-    if partition2[i] != partition[i]:
-        nodesChanged.append(i)
             
-print("The nodes that due to causals have changed communities: ", nodesChanged)
+# CausalEdges contains the edges of endogenous that has been selected to be examined
+# as causal due to rankMetric (emb or rc)
+print("The edges that will be examined as causal are: ", CausalEdges, "\n")
+#
+#contigencyLen = len(CausalEdges)
+#
+#                           
+## Remove from G the edges proposed as causal and re-run community detection algorithm
+#G.remove_edge(CausalEdges[1][0], CausalEdges[1][1])
+#G.remove_edge(CausalEdges[2][0], CausalEdges[2][1])
+## Compute the new partioning of the network with incremental way (to do)
+#partition2, Q2 = Louvain(G)  
+#
+#print("Modularity of Louvain partioning is:", Q2, "\n")
+##if partition2[initnode] != partition[initnode]:
+##    print("The query node changed community and gone to: ", partition2[initnode], "\n")
+#    
+## Find all the nodes that have changed communities
+#nodesChanged = []
+#for i in partition:
+#    if partition2[i] != partition[i]:
+#        nodesChanged.append(i)
+#            
+#print("The nodes that due to causals have changed communities: ", nodesChanged, "\n")
+#    
+## Compute responsibility 
+#res = 1/(1+contigencyLen)
+#print("Responsibility is: ", res, "\n")
+#    
+#
+## Compute discrepancy
+#if initnode in nodesChanged:
+#    nodesChanged.remove(initnode)
+#dis = len(nodesChanged)/((nodesLen)-1)
+#print("Discrepancy upon the changes is: ", dis, "\n")
+
+###########################################################################################
+
+for depth in range(1,4):
+
+    contigencyLen = depth-1
     
-# Compute 
+    if depth == 1:        
+        # Use a deep copy of the initial network to test the edge removals    
+        testG = copy.deepcopy(G)
+        rankOfCausals = defaultdict(dict)
+          
+        for e in CausalEdges:
+            testG.remove_edge(e[0], e[1])
+        
+            partition2, Q2 = Louvain(testG)
+            if partition2[initnode] != partition[initnode]:
+                # Means that the query node changed community
+                
+                res = 1/(1+contigencyLen)
+                # Find all the nodes that have changed communities
+                nodesChanged = []
+                for i in partition:
+                    if partition2[i] != partition[i]:
+                        nodesChanged.append(i)
+                if initnode in nodesChanged:
+                    nodesChanged.remove(initnode)
+                    dis = len(nodesChanged)/((nodesLen)-1)
+                rankOfCausals[e] = (res, dis)
+                testG.add_edge(e[0], e[1])
+            else:
+                testG.add_edge(e[0], e[1])
+                continue              
+            
+        print("The edges found in depth = 1 are: ", rankOfCausals, "\n")  
+
+        
+    if depth == 2:
+        testG = copy.deepcopy(G)    
+       
+        rankOfCausals = defaultdict(dict)        
+        # Keep in comb all the possible combinations of CausalEdges tuples with max length = depth
+        comb = list(combinations(CausalEdges, depth))
+        for e in comb:
+            testG.remove_edge(e[0][0], e[0][1])
+            testG.remove_edge(e[1][0], e[1][1])
+            
+            partition2, Q2 = Louvain(testG)
+            if partition2[initnode] != partition[initnode]:
+                # Means that the query node changed community
+                
+                res = 1/(1+contigencyLen)
+                # Find all the nodes that have changed communities
+                nodesChanged = []
+                for i in partition:
+                    if partition2[i] != partition[i]:
+                        nodesChanged.append(i)
+                if initnode in nodesChanged:
+                    nodesChanged.remove(initnode)
+                    dis = len(nodesChanged)/((nodesLen)-1)
+                rankOfCausals[e] = (res, dis)
+                testG.add_edge(e[0][0], e[0][1])
+                testG.add_edge(e[1][0], e[1][1])
+
+            else:
+                testG.add_edge(e[0][0], e[0][1])
+                testG.add_edge(e[1][0], e[1][1])
+                continue   
+        
+        
+        print("The edges found in depth = 2 are: ", rankOfCausals, "\n")
+        
+    if depth == 3:
+            testG = copy.deepcopy(G)    
+           
+            rankOfCausals = defaultdict(dict)  
+            # Keep in comb all the possible combinations of CausalEdges tuples with max length = depth
+            comb = list(combinations(CausalEdges, depth))
+
+            for e in comb:
+                testG.remove_edge(e[0][0], e[0][1])
+                testG.remove_edge(e[1][0], e[1][1])
+                testG.remove_edge(e[2][0], e[2][1])
+                
+                partition2, Q2 = Louvain(testG)
+                if partition2[initnode] != partition[initnode]:
+                    # Means that the query node changed community
+                    
+                    res = 1/(1+contigencyLen)
+                    # Find all the nodes that have changed communities
+                    nodesChanged = []
+                    for i in partition:
+                        if partition2[i] != partition[i]:
+                            nodesChanged.append(i)
+                    if initnode in nodesChanged:
+                        nodesChanged.remove(initnode)
+                        dis = len(nodesChanged)/((nodesLen)-1)
+                    rankOfCausals[e] = (res, dis)
+                    testG.add_edge(e[0][0], e[0][1])
+                    testG.add_edge(e[1][0], e[1][1])
+                    testG.add_edge(e[2][0], e[2][1])
     
-    
-    
-    
-    
+                else:
+                    testG.add_edge(e[0][0], e[0][1])
+                    testG.add_edge(e[1][0], e[1][1])
+                    testG.add_edge(e[2][0], e[2][1])
+                    continue   
+            
+        
+            print("The edges found in depth = 3 are: ", rankOfCausals, "\n")
+
+
+
+
+
+###########################################################################################
+
+## Use a deep copy of the initial network to test the edge removals    
+#testG = copy.deepcopy(G)
+#    
+#rankOfCausals = defaultdict(dict)
+#contigencyLen = 0  
+#for e in CausalEdges:
+#    testG.remove_edge(e[0], e[1])
+#
+#    partition2, Q2 = Louvain(testG)
+#    if partition2[initnode] != partition[initnode]:
+#        # Means that the query node changed community
+#        
+#        res = 1/(1+contigencyLen)
+#        # Find all the nodes that have changed communities
+#        nodesChanged = []
+#        for i in partition:
+#            if partition2[i] != partition[i]:
+#                nodesChanged.append(i)
+#        if initnode in nodesChanged:
+#            nodesChanged.remove(initnode)
+#            dis = len(nodesChanged)/((nodesLen)-1)
+#        rankOfCausals[e] = (res, dis)
+#    else:
+#        contigencyLen += 1
+#        continue
+#
+#     
+##    G.add_edge(e[0], e[1])       
+#    
+#print(rankOfCausals) 
+
+###########################################################################################

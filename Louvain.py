@@ -19,15 +19,15 @@ def Louvain(G):
     modularity = community_louvain.modularity(partition, G)
     
 #    print("Q=", modularity)
-#    
+    
 #    # draw the graph
 #    pos = nx.spring_layout(G)
 #    # color the nodes according to their partition
 #    cmap = cm.get_cmap('viridis', max(partition.values()) + 1)
-#    nx.draw_networkx_nodes(G, pos, partition.keys(), node_size=80,
+#    nx.draw_networkx_nodes(G, pos, partition.keys(), node_size=100,
 #                           cmap=cmap, node_color=list(partition.values()))
 #    nx.draw_networkx_edges(G, pos, alpha=0.5)
-#    nx.draw_networkx_labels(G,pos,font_size=7)
+#    nx.draw_networkx_labels(G,pos,font_size=10)
 #    #plt.savefig("plot.png", dpi=1000)
 #    plt.show()
     
