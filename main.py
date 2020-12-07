@@ -22,8 +22,6 @@ from rankMetricRC import rankMetricRC
 import sys
 import copy
 from ResAndDis import resAndDis
-from collections import OrderedDict
-
 
 
 # Load the graph
@@ -43,14 +41,17 @@ communities = set(partition.values())
 communities_dict = {c: [k for k, v in partition.items() if v == c] for c in communities}
 
 # The initial query node
-initnode = 5 
+initnode = 10 
 
 # The number of items to examine as causal (selected from endogenous)
 nOfCausal = 3 
 
 # select how to compute the endogenous set
-method = 'random' 
+method = 'incident'
 rankMetric = 'emb'
+
+# After the computation of ρ and γ keep the top k as causals to be removed
+k = 2 
 
 ##########################################################################################
 
@@ -240,15 +241,37 @@ for cardinality in range(1,4):
                     continue                       
 #            print("The edges found with cardinality = 3 are: ", rankOfCausals, "\n")
 
+# Case when query node does not change community
+if len(rankOfCausals) == 0:
+    print("No change with this query node. The process stops")
+    sys.exit()
 # Sort rankOfCausals based on responsibility values
 sortedRankOfCausals = sorted(rankOfCausals.items(), key=lambda x: (x[1], x[1][1]), reverse=True)
-
 print("The causal edges ranked based on their ρ and γ values are: ", sortedRankOfCausals, "\n")
-
-
 
 ###########################################################################################
 
+## Keep the top k ranked causalEdges in a list
+#causalToBeOut= sortedRankOfCausals[:k] 
+#print("The top", k , "causal edges based on their ρ and γ values to be removed: ", causalToBeOut, "\n")
 
+###########################################################################################
+
+# Keep in remList the first edge/s of the above and compute the modularity of the new partitioning
+remList = []
+for e in (list(sortedRankOfCausals[0][0])):
+    remList.append(e) 
+#print("The edge/s to be removed is/are:", remList, "\n")
+
+for e in remList:
+    if type(e)== int or isinstance(e, (int, np.integer)):
+        G.remove_edge(remList[0], remList[1])
+        break
+    else:
+        G.remove_edge(e[0],e[1])
+
+
+partitionF, QF = Louvain(testG)
+print("Modularity of new Louvain partioning is:", QF, "\n")
 
 ###########################################################################################

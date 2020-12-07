@@ -19,8 +19,14 @@ import random
 
 def loadGraph():
     
-#    G = nx.les_miserables_graph()
-    G = nx.karate_club_graph()
+    G = nx.karate_club_graph() # 34 nodes 78 edges
+#    G = nx.les_miserables_graph() # 77 nodes 254 edges
+#    G = nx.read_adjlist('ca-GrQc.txt', delimiter='\t') # 5242 nodes 14496 edges
+    
+    print(G.number_of_nodes())
+    print(G.number_of_edges())
+    
+    sys.exit()
     
     # Check if node ids are integers. If not convert them to integers
     if all(isinstance(n, int) for n in list(G.nodes)):
