@@ -15,7 +15,7 @@ import networkx as nx
 
 def Louvain(G):
     
-    partition = community_louvain.best_partition(G)
+    partition = community_louvain.best_partition(G, randomize=False)
     modularity = community_louvain.modularity(partition, G)
     
 #    print("Q=", modularity)

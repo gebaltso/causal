@@ -34,7 +34,7 @@ nodesLen = len(G.nodes())
 partition, Q = Louvain(G)
 #partition = {0: 0, 1: 0, 2: 0, 3: 0, 4: 1, 5: 1, 6: 1, 7: 0, 8: 2, 9: 2, 10: 1, 11: 0, 12: 0, 13: 0, 14: 2, 15: 2, 16: 1, 17: 0, 18: 2, 19: 0, 20: 2, 21: 0, 22: 2, 23: 3, 24: 3, 25: 3, 26: 2, 27: 3, 28: 3, 29: 2, 30: 2, 31: 3, 32: 2, 33: 2}
 print("Modularity of Louvain partioning is:", Q, "\n")
-#print(partition)
+
 
 # communities_dict contains the communities and nodes of each community
 communities = set(partition.values())
@@ -79,7 +79,7 @@ elif method == 'incident':
 
 elif method == 'incomm':
     # Find the community C that node n belongs
-    C = partition.get(initnode)    
+    C = partition.get(initnode) 
     # Find all the nodes of community C (n belongs to C)
     communityTmp =  [v for k, v in communities_dict.items() if k == C]    
     # Create flat list to make one list from a list with lists    
