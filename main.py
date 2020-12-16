@@ -32,7 +32,6 @@ nodesLen = len(G.nodes())
 
 # Compute the best partition
 partition, Q = Louvain(G)
-#partition = {0: 0, 1: 0, 2: 0, 3: 0, 4: 1, 5: 1, 6: 1, 7: 0, 8: 2, 9: 2, 10: 1, 11: 0, 12: 0, 13: 0, 14: 2, 15: 2, 16: 1, 17: 0, 18: 2, 19: 0, 20: 2, 21: 0, 22: 2, 23: 3, 24: 3, 25: 3, 26: 2, 27: 3, 28: 3, 29: 2, 30: 2, 31: 3, 32: 2, 33: 2}
 print("Modularity of Louvain partioning is:", Q, "\n")
 
 
@@ -41,17 +40,23 @@ communities = set(partition.values())
 communities_dict = {c: [k for k, v in partition.items() if v == c] for c in communities}
 
 # The initial query node
-initnode = 10 
+initnode = 229
+
 
 # The number of items to examine as causal (selected from endogenous)
-nOfCausal = 3 
+nOfCausal = 6
+# In order to select and check all the edges as causals have to replace the nOfCausal with
+#len(endoEdges)
+
 
 # select how to compute the endogenous set
-method = 'incident'
-rankMetric = 'emb'
+method = 'random' # Select among 'exo' for exogenously given edges, 'random' for random walk, 
+#'incident' for all edges incident to query node, 'incomm' for edges inside the same community as the query node
+
+rankMetric = 'emb' # Select among 'emb' for embeddedness, 'rc' for relative commitment, 'none' for considering all the endogenous as possible causal ones
 
 # After the computation of ρ and γ keep the top k as causals to be removed
-k = 2 
+#k = 2 
 
 ##########################################################################################
 
@@ -127,49 +132,16 @@ elif rankMetric == 'rc':
         if (e[0] in finalCausalNodes) or (e[1] in finalCausalNodes):
             if (e[1],e[0]) not in CausalEdges:
                 CausalEdges.append(e)
-
-
-
+                
+                
+# when I want to examine all the endogenous edges as causal ones
+elif rankMetric == 'none':
+    for e in list(endoEdges):
+        if (e[1],e[0]) not in CausalEdges:
+            CausalEdges.append(e)
+        
 ###########################################################################################
             
-# CausalEdges contains the edges of endogenous that has been selected to be examined
-# as causal due to rankMetric (emb or rc)
-#print("The edges that will be examined as causal are: ", CausalEdges, "\n")
-#
-#contigencyLen = len(CausalEdges)
-#
-#                           
-## Remove from G the edges proposed as causal and re-run community detection algorithm
-#G.remove_edge(CausalEdges[1][0], CausalEdges[1][1])
-#G.remove_edge(CausalEdges[2][0], CausalEdges[2][1])
-## Compute the new partioning of the network with incremental way (to do)
-#partition2, Q2 = Louvain(G)  
-#
-#print("Modularity of Louvain partioning is:", Q2, "\n")
-##if partition2[initnode] != partition[initnode]:
-##    print("The query node changed community and gone to: ", partition2[initnode], "\n")
-#    
-## Find all the nodes that have changed communities
-#nodesChanged = []
-#for i in partition:
-#    if partition2[i] != partition[i]:
-#        nodesChanged.append(i)
-#            
-#print("The nodes that due to causals have changed communities: ", nodesChanged, "\n")
-#    
-## Compute responsibility 
-#res = 1/(1+contigencyLen)
-#print("Responsibility is: ", res, "\n")
-#    
-#
-## Compute discrepancy
-#if initnode in nodesChanged:
-#    nodesChanged.remove(initnode)
-#dis = len(nodesChanged)/((nodesLen)-1)
-#print("Discrepancy upon the changes is: ", dis, "\n")
-
-###########################################################################################
-
 # CausalEdges contains the edges of endogenous that has been selected to be examined
 # as causal due to rankMetric (emb or rc)
 print("The edges that will be examined as causal are: ", CausalEdges, "\n")
@@ -271,7 +243,7 @@ for e in remList:
         G.remove_edge(e[0],e[1])
 
 
-partitionF, QF = Louvain(testG)
+partitionF, QF = Louvain(G)
 print("Modularity of new Louvain partioning is:", QF, "\n")
 
 ###########################################################################################

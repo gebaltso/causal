@@ -44,8 +44,9 @@ def rankMetricM(n, partition, communities_dict, G):
     # nodeWithMaxDegInC = max(degInC.items(), key=operator.itemgetter(1))[0]
 
     # Compute embededdness as the ratio between the degree of node n inside community C
-    # and the total degree of node n 
-    emb = (degInC[n]/G.degree(n))
+    # and the total degree of node n which is deg
+    deg = len(list(G.neighbors(n)))
+    emb = (degInC[n]/deg)
     
     # Compute metric M
     M = emb*degInC[n]/maxDegInC

@@ -34,16 +34,17 @@ def messagePropagation(n, N, k, G):
         # s is the source node of the edge
         s = n
          
-        # find the adjacent nodes to node un        
+        # find the adjacent nodes to node n        
         neiOfn = list(G.neighbors(n))
+        deg = len(neiOfn)
         
+#        print("n=", n, "nei=", neiOfn, "deg=", G.degree[n], "adj=", list(G[n]))
         
         #calculate the possibility of visiting a neighbour node
         Pr = defaultdict(dict)
         for i in neiOfn:
-            Pr[i] = 1/G.degree[n]
+            Pr[i] = 1/deg
             
-#        print(list(Pr.keys()))
                 
         # find the next node in random way considering the probabilities of edges    
         n = (np.random.choice(list(Pr.keys()), p=list(Pr.values())))
