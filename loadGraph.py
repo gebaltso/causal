@@ -19,12 +19,12 @@ import os
 
 def loadGraph():
     
-    myFile = "netScEdgelist.csv"
+    myFile = "datasets/finalB.csv"
     
 #    G = nx.read_edgelist("hdnEdgelist.csv", create_using=nx.Graph(), delimiter=",", encoding='utf-8-sig') #human disease network with 1419 nodes and 2738 edges
 #    G = nx.read_edgelist("hdnDiseaseEdgelist.csv", create_using=nx.Graph(), delimiter=",", encoding='utf-8-sig') #human disease network with 516 nodes and 1188 edges
 #    G = nx.read_edgelist("yeastEdgelist.csv", create_using=nx.Graph(), delimiter=",", encoding='utf-8-sig') #protein protein interaction network with 2361 nodes and 7182 edges/6646 without self loops
-    G = nx.read_edgelist(myFile, create_using=nx.Graph(), delimiter=",", encoding='utf-8-sig') #network scientists coauthorship network with 1461 nodes and 2742 edges    
+    G = nx.read_edgelist(myFile, create_using=nx.Graph(), delimiter=",", encoding='utf-8-sig') #network scientists coauthorship network with 1461 nodes and 2742 edges    / Largest component 379 nodes 914 edges
 #    G = nx.karate_club_graph() # 34 nodes 78 edges
 #    G = nx.les_miserables_graph() # 77 nodes 254 edges
 #    G = nx.read_adjlist('ca-GrQc.txt', delimiter='\t') # 5242 nodes 14496 edges
@@ -34,7 +34,7 @@ def loadGraph():
     
 #    print(G.number_of_nodes())
 #    print(G.number_of_edges())
-#    
+#   
 #    sys.exit()
     
 
@@ -45,14 +45,13 @@ def loadGraph():
         start = 0
         G = nx.convert_node_labels_to_integers(G,first_label=start,ordering='sorted', label_attribute='old_labels')
 
-    # Write new and old labels in a file
-    with open('Labels/labels_'+str(myFile) + '.csv', 'a') as out_file:
-        writer = csv.writer(out_file, delimiter=';')            
-        if os.stat('Labels/labels_'+str(myFile) + '.csv').st_size == 0:
-            writer.writerow(["Old Label", "New Label"])                
-            for n in list(G.nodes()):
-                writer.writerow([G.nodes[n]['old_labels'], n]) 
-
+#    # Write new and old labels in a file
+#    with open('datasets/labels/labels'+ '.csv', 'a') as out_file:
+#        writer = csv.writer(out_file, delimiter=';')            
+#        if os.stat('datasets/labels/labels' + '.csv').st_size == 0:
+#            writer.writerow(["Old Label", "New Label"])                
+#            for n in list(G.nodes()):
+#                writer.writerow([G.nodes[n]['old_labels'], n]) 
 
     return G
 

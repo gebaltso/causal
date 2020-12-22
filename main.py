@@ -12,15 +12,20 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from collections import defaultdict
+from gephistreamer import graph
+from gephistreamer import streamer
 import itertools
+import random
+import time
+import sys
+import copy
 from itertools import combinations
 from loadGraph import loadGraph
 from Louvain import Louvain
 from FindEndogenousViaRandomWalks import endogenous
 from rankMetricM import rankMetricM
 from rankMetricRC import rankMetricRC
-import sys
-import copy
+
 from ResAndDis import resAndDis
 
 
@@ -34,13 +39,23 @@ nodesLen = len(G.nodes())
 partition, Q = Louvain(G)
 print("Modularity of Louvain partioning is:", Q, "\n")
 
+##########################################################################################
+# For connecting and visualizing with Gephi api
+stream = streamer.Streamer(streamer.GephiWS(hostname="localhost",port=8080,workspace="workspace14"))
+for source, target in G.edges():   
+    node_source = graph.Node(source, size=50, community=partition[source], label=G.nodes[source]['old_labels'])
+    node_target = graph.Node(target, size=50, community=partition[target], label=G.nodes[target]['old_labels'])
+    stream.add_node(node_source,node_target)
+    stream.add_edge(graph.Edge(node_source,node_target, directed=False))
+time.sleep(1) #It might be possible the script runs too fast and last action arn't sent properly
+##########################################################################################
 
 # communities_dict contains the communities and nodes of each community
 communities = set(partition.values())
 communities_dict = {c: [k for k, v in partition.items() if v == c] for c in communities}
 
 # The initial query node
-initnode = 229
+initnode = 334
 
 
 # The number of items to examine as causal (selected from endogenous)
@@ -50,10 +65,10 @@ nOfCausal = 6
 
 
 # select how to compute the endogenous set
-method = 'random' # Select among 'exo' for exogenously given edges, 'random' for random walk, 
+method = 'incident' # Select among 'exo' for exogenously given edges, 'random' for random walk, 
 #'incident' for all edges incident to query node, 'incomm' for edges inside the same community as the query node
 
-rankMetric = 'emb' # Select among 'emb' for embeddedness, 'rc' for relative commitment, 'none' for considering all the endogenous as possible causal ones
+rankMetric = 'rc' # Select among 'emb' for embeddedness, 'rc' for relative commitment, 'none' for considering all the endogenous as possible causal ones
 
 # After the computation of ρ and γ keep the top k as causals to be removed
 #k = 2 
@@ -144,7 +159,7 @@ elif rankMetric == 'none':
             
 # CausalEdges contains the edges of endogenous that has been selected to be examined
 # as causal due to rankMetric (emb or rc)
-print("The edges that will be examined as causal are: ", CausalEdges, "\n")
+#print("The edges that will be examined as causal are: ", CausalEdges, "\n")
 
 # Dictionary that contains the causal edges ranked based on their ρ and γ values
 rankOfCausals = defaultdict(dict)
@@ -219,7 +234,7 @@ if len(rankOfCausals) == 0:
     sys.exit()
 # Sort rankOfCausals based on responsibility values
 sortedRankOfCausals = sorted(rankOfCausals.items(), key=lambda x: (x[1], x[1][1]), reverse=True)
-print("The causal edges ranked based on their ρ and γ values are: ", sortedRankOfCausals, "\n")
+#print("The causal edges ranked based on their ρ and γ values are: ", sortedRankOfCausals, "\n")
 
 ###########################################################################################
 
@@ -247,3 +262,23 @@ partitionF, QF = Louvain(G)
 print("Modularity of new Louvain partioning is:", QF, "\n")
 
 ###########################################################################################
+
+# For connecting and visualizing with Gephi api
+stream = streamer.Streamer(streamer.GephiWS(hostname="localhost",port=8080,workspace="workspace13"))
+for source, target in G.edges():   
+    node_source = graph.Node(source, size=50, community=partitionF[source], label=G.nodes[source]['old_labels'])
+    node_target = graph.Node(target, size=50, community=partitionF[target], label=G.nodes[target]['old_labels'])
+    stream.add_node(node_source,node_target)
+    # time.sleep(0.5) # Make it slower
+    stream.add_edge(graph.Edge(node_source,node_target, directed=False))
+time.sleep(1) #It might be possible the script runs too fast and last action arn't sent properly
+
+###########################################################################################
+
+
+
+
+
+
+
+
