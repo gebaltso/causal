@@ -6,15 +6,7 @@ Created on Thu Oct 29 16:41:34 2020
 @author: georgiabaltsou
 """
 
-import community as community_louvain
-import matplotlib.cm as cm
-import matplotlib.pyplot as plt
 import networkx as nx
-import numpy as np
-from collections import defaultdict
-import csv
-import sys
-import os
 
 
 def loadGraph():
