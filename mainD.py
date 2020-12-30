@@ -35,8 +35,8 @@ partition, Q = Louvain(G)
 print("Modularity of Louvain partioning is:", Q, "\n")
 
 ##########################################################################################
-# For connecting and visualizing with Gephi api
-#stream = streamer.Streamer(streamer.GephiWS(hostname="localhost",port=8080,workspace="workspace14"))
+## For connecting and visualizing with Gephi api
+#stream = streamer.Streamer(streamer.GephiWS(hostname="localhost",port=8080,workspace="workspace1"))
 #for source, target in G.edges():   
 #    node_source = graph.Node(source, size=50, community=partition[source], label=G.nodes[source]['old_labels'])
 #    node_target = graph.Node(target, size=50, community=partition[target], label=G.nodes[target]['old_labels'])
@@ -50,7 +50,7 @@ communities = set(partition.values())
 communities_dict = {c: [k for k, v in partition.items() if v == c] for c in communities}
 
 # The initial query node
-initnode = 51
+initnode = 111
  
 # select how to compute the endogenous set
 method = 'incident' # Select among 'exo' for exogenously given edges, 'random' for random walk, 
@@ -220,12 +220,13 @@ for cardinality in range(1,4):
 
 # Case when query node does not change community
 if len(rankOfCausals) == 0:
-    print("No change with this query node. The process stops\n")
     print("###################################################")
+    print("No change with this query node. The process stops")
+    print("###################################################\n")
     sys.exit()
 # Sort rankOfCausals based on responsibility values
 sortedRankOfCausals = sorted(rankOfCausals.items(), key=lambda x: (x[1], x[1][1]), reverse=True)
-#print("The causal edges ranked based on their ρ and γ values are: ", sortedRankOfCausals, "\n")
+print("The causal edges ranked based on their ρ and γ values are: ", sortedRankOfCausals, "\n")
 
 ###########################################################################################
 

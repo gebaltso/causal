@@ -16,6 +16,7 @@ import time
 import sys
 import copy
 from itertools import combinations
+from collections import Counter
 from loadGraph import loadGraph
 from Louvain import Louvain
 from FindEndogenousViaRandomWalks import endogenous
@@ -58,7 +59,10 @@ communities = set(partition.values())
 communities_dict = {c: [k for k, v in partition.items() if v == c] for c in communities}
 
 # The initial query node
-initnode = 157
+initnode = 182
+
+# The number of highest in-community degree values that I'll keep the nodes of to check for causals. E.g. if highNodes=3 means that I'll keep the 3 nodes with highest in-community degree to check for edge adding.
+highNodes = 4 
 
 # Find the community C that node n belongs
 C = partition.get(initnode)
@@ -78,15 +82,31 @@ lenComms = len(neighboringComms) # Find how many are the neighbouring communitie
 ##########################################################################################
         
 # Find the highest degree nodes of the neighbouring to initial node communities
-highest_degree = defaultdict(dict)       
+highest_degree = defaultdict(dict)
+allNodesComms = defaultdict(dict)       
 for k in range(lenComms):
     temp = defaultdict(dict)
+    maxVal = []
     for i in communities_dict[neighboringComms[k]]:  
         temp[i] = inComm(i, communities_dict[neighboringComms[k]], G)        
-#    highest_degree[neighboringComms[k]] = max(temp.items(), key=operator.itemgetter(1))[0] # this is to return only one key whose value is max, not all with max values
-    highest_degree[neighboringComms[k]] = [keys for keys,values in temp.items() if values == max(temp.values())]    
-#    print(temp)
-print("The neighbouring communities with their corresponding hishest in degree nodes are:", dict(highest_degree))
+#    highest_degree[neighboringComms[k]] = max(temp.items(), key=operator.itemgetter(1))[0] # this is to return only one key whose value is max, not all with max values   
+#        if temp[i] not in maxVal:
+#            maxVal.append(temp[i])
+#    maxVal = sorted(maxVal, reverse=True)
+#    print(maxVal)
+#    allNodesComms[neighboringComms[k]] = sorted(temp.items(), key=lambda x: (x[1]), reverse=True)
+    
+    # keep in mcf the highNodes top ranked nodes that have highest in-community degree
+    c = Counter(temp)
+    mc = c.most_common(highNodes)
+    mcf = [x[0] for x in mc]
+    print("mc=", mcf)
+    
+    highest_degree[neighboringComms[k]] = mcf
+#    highest_degree[neighboringComms[k]] = [keys for keys,values in temp.items() if values == max(temp.values())]    
+
+print("The neighbouring communities with their corresponding highest in-community degree nodes are:", dict(highest_degree))
+
 
 if len(dict(highest_degree))> 1:
     # User selects which community to check
@@ -95,7 +115,8 @@ else:
     commToCheck = list(dict(highest_degree).keys())[0]
 
 # Keep the nodes found before from the selected community
-nodesMax = highest_degree[int(commToCheck)]
+nodesMax = highest_degree[int(commToCheck)] # keep only the max degree in-community nodes
+
 
 ##########################################################################################
 # Check if there are edges connecting initial node to nodesMax and add them in finalCausalNodes
@@ -112,8 +133,9 @@ for node in nodesMax:
            
 # CausalEdges contains the edges of endogenous that has been selected to be examined
 # as causal.
-#print("The edges that will be examined as causal are: ", CausalEdges, "\n")
+print("The edges that will be examined as causal are: ", CausalEdges, "\n")
 
+# Find causals only as unique, douples or triples
 cardinality = lenComms
 if cardinality > 3:
     cardinality = 3
@@ -187,8 +209,9 @@ for cardinality in range(1,4):
 
 # Case when query node does not change community
 if len(rankOfCausals) == 0:
-    print("No change with this query node. The process stops\n")
     print("###################################################")
+    print("No change with this query node. The process stops")
+    print("###################################################\n")
     sys.exit()
 # Sort rankOfCausals based on responsibility values
 sortedRankOfCausals = sorted(rankOfCausals.items(), key=lambda x: (x[1], x[1][1]), reverse=True)
