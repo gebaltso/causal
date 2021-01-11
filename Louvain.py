@@ -10,6 +10,8 @@ import community as community_louvain
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import networkx as nx
+import pandas as pd
+import sys
 
 
 
@@ -17,6 +19,16 @@ def Louvain(G):
     
     partition = community_louvain.best_partition(G, randomize=False)
     modularity = community_louvain.modularity(partition, G)
+    
+#    comm = pd.DataFrame(partition.items(), columns=['node', 'cluster'], dtype=int)    
+#    groups = comm.groupby('cluster')['node'].apply(list)
+#    
+#    print(comm)
+#    print(groups)
+#    
+#    for grp in groups:
+#        print('{}:{}'.format(grp, len(grp)))  # [nodes in a community]:[size of the community]
+
     
 #    print("Q=", modularity)
     

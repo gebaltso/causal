@@ -24,6 +24,7 @@ from rankMetricRC import rankMetricRC
 from ResAndDis import resAndDis
 
 
+
 # Load the graph
 G = loadGraph()
 
@@ -50,7 +51,7 @@ communities = set(partition.values())
 communities_dict = {c: [k for k, v in partition.items() if v == c] for c in communities}
 
 # The initial query node
-initnode = 111
+initnode = 244
  
 # select how to compute the endogenous set
 method = 'incident' # Select among 'exo' for exogenously given edges, 'random' for random walk, 
@@ -164,6 +165,13 @@ for cardinality in range(1,4):
             testG.remove_edge(e[0], e[1])
         
             partition2, Q2 = Louvain(testG)
+            communities2 = set(partition.values())
+            communities_dict2 = {c: [k for k, v in partition.items() if v == c] for c in communities}
+#
+#            print("1=",communities_dict[partition.get(initnode)])
+#            print("2=",communities_dict2[partition2.get(initnode)])
+        
+
             if partition2[initnode] != partition[initnode]:
                 # Means that the query node changed community      
                 rankOfCausals = resAndDis(partition, partition2, initnode, contigencyLen, nodesLen, rankOfCausals, e)

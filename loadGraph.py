@@ -19,7 +19,7 @@ def loadGraph():
     G = nx.read_edgelist(myFile, create_using=nx.Graph(), delimiter=",", encoding='utf-8-sig') #network scientists coauthorship network with 1461 nodes and 2742 edges    / Largest component 379 nodes 914 edges
 #    G = nx.karate_club_graph() # 34 nodes 78 edges
 #    G = nx.les_miserables_graph() # 77 nodes 254 edges
-#    G = nx.read_adjlist('ca-GrQc.txt', delimiter='\t') # 5242 nodes 14496 edges
+#    G = nx.read_adjlist('datasets/ca-GrQc.txt', delimiter='\t') # 5242 nodes 14496 edges
     
     # To remove self loops
 #    G.remove_edges_from(nx.selfloop_edges(G))

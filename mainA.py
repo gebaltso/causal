@@ -100,7 +100,7 @@ for k in range(lenComms):
     c = Counter(temp)
     mc = c.most_common(highNodes)
     mcf = [x[0] for x in mc]
-    print("mc=", mcf)
+#    print("mc=", mcf)
     
     highest_degree[neighboringComms[k]] = mcf
 #    highest_degree[neighboringComms[k]] = [keys for keys,values in temp.items() if values == max(temp.values())]    
@@ -116,7 +116,6 @@ else:
 
 # Keep the nodes found before from the selected community
 nodesMax = highest_degree[int(commToCheck)] # keep only the max degree in-community nodes
-
 
 ##########################################################################################
 # Check if there are edges connecting initial node to nodesMax and add them in finalCausalNodes
@@ -247,7 +246,7 @@ print("Modularity of new Louvain partioning is:", QF, "\n")
 ###########################################################################################
 
 ## For connecting and visualizing with Gephi api
-#stream = streamer.Streamer(streamer.GephiWS(hostname="localhost",port=8080,workspace="workspace2"))
+#stream = streamer.Streamer(streamer.GephiWS(hostname="localhost",port=8080,workspace="workspace3"))
 #for source, target in G.edges():   
 #    node_source = graph.Node(source, size=50, community=partitionF[source], label=G.nodes[source]['old_labels'])
 #    node_target = graph.Node(target, size=50, community=partitionF[target], label=G.nodes[target]['old_labels'])
