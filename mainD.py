@@ -14,26 +14,42 @@ import itertools
 import time
 import sys
 import copy
+import csv
 from itertools import combinations
 from loadGraph import loadGraph
 from Louvain import Louvain
 from FindEndogenousViaRandomWalks import endogenous
 from rankMetricM import rankMetricM
 from rankMetricRC import rankMetricRC
-
 from ResAndDis import resAndDis
 
 
 
 # Load the graph
-G = loadGraph()
+G, p = loadGraph()
 
 # Number of nodes of the initial G 
-nodesLen = len(G.nodes())
+nodesLen = G.number_of_nodes()
 
-# Compute the best partition
-partition, Q = Louvain(G)
-print("Modularity of Louvain partioning is:", Q, "\n")
+# If p = False I do not have the partition
+if p == False:
+    # Compute the best partition
+    partition = Louvain(G)
+#    partition, Q = Louvain(G)
+#    print("Modularity of Louvain partioning is:", Q, "\n")
+else:
+    # I have already the initial partition
+    partition = defaultdict(dict)
+    
+    with open("datasets/aminerEdgelistWithComms.csv", 'r') as f:
+        csv_reader = csv.reader(f, delimiter=',')        
+        for row in csv_reader:
+            if int(row[0]) not in partition:
+                partition[int(row[0])] = int(row[2])
+            if int(row[1]) not in partition:
+                partition[int(row[1])] = int(row[3])            
+    partition = dict(partition)
+
 
 ##########################################################################################
 ## For connecting and visualizing with Gephi api
@@ -51,15 +67,16 @@ communities = set(partition.values())
 communities_dict = {c: [k for k, v in partition.items() if v == c] for c in communities}
 
 # The initial query node
-initnode = 244
+initnode = 78100
  
 # select how to compute the endogenous set
 method = 'incident' # Select among 'exo' for exogenously given edges, 'random' for random walk, 
 #'incident' for all edges incident to query node, 'incomm' for edges inside the same community as the query node
+# random is the most time consuming
 
 # The number of items to examine as causal (selected from endogenous)
 nOfCausal = 6  # This is not used when I choose to check all the edges as causals
-rankMetric = 'rc' # Select among 'emb' for embeddedness, 'rc' for relative commitment, 'none' for considering all the endogenous as possible causal ones
+rankMetric = 'none' # Select among 'emb' for embeddedness, 'rc' for relative commitment, 'none' for considering all the endogenous as possible causal ones
 
 # After the computation of ρ and γ keep the top k as causals to be removed
 #k = 2 
@@ -75,7 +92,7 @@ elif method == 'random':
     # Compute the endogenous set via random walks. Give as parameters the graph, 
     # the number of random walks, the length of the random walks and the initial node
     # returns E which is the list of all the random walks and endoEdges which is the set of edges in these walks
-    nrw = 10 #number of random walks
+    nrw = 5 #number of random walks
     l = 3 #length of random walks
     E, endoEdges = endogenous(G, nrw, l, initnode)
         
@@ -95,17 +112,24 @@ elif method == 'incomm':
     communityTmp =  [v for k, v in communities_dict.items() if k == C]    
     # Create flat list to make one list from a list with lists    
     community = [item for sublist in communityTmp for item in sublist]
-        
+    
     endoEdges = []
     for i in community:
         for j in community:
             if G.has_edge(i, j):
                 if (j,i) not in endoEdges:
                     endoEdges.append((i,j))
-    
+        
     endoNodes = set(itertools.chain.from_iterable(list(endoEdges)))
-    endoNodes.remove(initnode) # remove the initial node as G.edges include it
-
+    
+    if initnode in endoNodes:
+        endoNodes.remove(initnode) # remove the initial node as G.edges include it
+    else:
+        process = input("The initial node does not have any neighbour into its community. Should the process continue?")
+        if process == "no":
+            sys.exit()
+        
+print("Endogenous edges found.\n")
 ###########################################################################################
 
 # Dictionary to keep nodes of endoNodes and their corresponding M values
@@ -145,7 +169,8 @@ elif rankMetric == 'none':
     for e in list(endoEdges):
         if (e[1],e[0]) not in CausalEdges:
             CausalEdges.append(e)
-        
+
+print("Causal edges found.\n")        
 ###########################################################################################
             
 # CausalEdges contains the edges of endogenous that has been selected to be examined
@@ -164,7 +189,8 @@ for cardinality in range(1,4):
         for e in CausalEdges:
             testG.remove_edge(e[0], e[1])
         
-            partition2, Q2 = Louvain(testG)
+            partition2 = Louvain(testG)
+#            partition2, Q2 = Louvain(testG)
             communities2 = set(partition.values())
             communities_dict2 = {c: [k for k, v in partition.items() if v == c] for c in communities}
 #
@@ -189,8 +215,9 @@ for cardinality in range(1,4):
         comb = list(combinations(CausalEdges, cardinality))
         for e in comb:
             testG.remove_edge(e[0][0], e[0][1])
-            testG.remove_edge(e[1][0], e[1][1])            
-            partition2, Q2 = Louvain(testG)
+            testG.remove_edge(e[1][0], e[1][1])
+            partition2 = Louvain(testG)            
+#            partition2, Q2 = Louvain(testG)
             if partition2[initnode] != partition[initnode]:
                 # Means that the query node changed community
                 rankOfCausals = resAndDis(partition, partition2, initnode, contigencyLen, nodesLen, rankOfCausals, e)
@@ -211,8 +238,9 @@ for cardinality in range(1,4):
             for e in comb:
                 testG.remove_edge(e[0][0], e[0][1])
                 testG.remove_edge(e[1][0], e[1][1])
-                testG.remove_edge(e[2][0], e[2][1])                
-                partition2, Q2 = Louvain(testG)
+                testG.remove_edge(e[2][0], e[2][1]) 
+                partition2 = Louvain(testG)
+#                partition2, Q2 = Louvain(testG)
                 if partition2[initnode] != partition[initnode]:
                     # Means that the query node changed community
                     rankOfCausals = resAndDis(partition, partition2, initnode, contigencyLen, nodesLen, rankOfCausals, e)
@@ -258,9 +286,9 @@ for e in remList:
     else:
         G.remove_edge(e[0],e[1])
 
-
-partitionF, QF = Louvain(G)
-print("Modularity of new Louvain partioning is:", QF, "\n")
+partitionF = Louvain(G)
+#partitionF, QF = Louvain(G)
+#print("Modularity of new Louvain partioning is:", QF, "\n")
 
 ###########################################################################################
 

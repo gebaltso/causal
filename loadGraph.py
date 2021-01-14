@@ -7,11 +7,21 @@ Created on Thu Oct 29 16:41:34 2020
 """
 
 import networkx as nx
+import os
+import csv
+from collections import defaultdict
 
 
 def loadGraph():
     
-    myFile = "datasets/finalB.csv"
+    
+    myFile = "datasets/aminerEdgelist.csv"
+#    myFile = "datasets/finalB.csv"
+    
+    if myFile == "datasets/aminerEdgelist.csv":
+        p = True
+    else:
+        p = False
     
 #    G = nx.read_edgelist("hdnEdgelist.csv", create_using=nx.Graph(), delimiter=",", encoding='utf-8-sig') #human disease network with 1419 nodes and 2738 edges
 #    G = nx.read_edgelist("hdnDiseaseEdgelist.csv", create_using=nx.Graph(), delimiter=",", encoding='utf-8-sig') #human disease network with 516 nodes and 1188 edges
@@ -34,8 +44,17 @@ def loadGraph():
     if all(isinstance(n, int) for n in list(G.nodes)):
         print(" ")      
     else:
-        start = 0
-        G = nx.convert_node_labels_to_integers(G,first_label=start,ordering='sorted', label_attribute='old_labels')
+        if p == True:
+            mapping = defaultdict(dict)
+            with open(myFile, 'r') as f:
+                csv_reader = csv.reader(f, delimiter=',')        
+                for row in csv_reader:
+                    mapping[row[0]] = int(row[0])
+                    mapping[row[1]] = int(row[1]) 
+            G = nx.relabel_nodes(G, mapping, copy=False)
+        else:
+            start = 0
+            G = nx.convert_node_labels_to_integers(G,first_label=start,ordering='sorted', label_attribute='old_labels')
 
 #    # Write new and old labels in a file
 #    with open('datasets/labels/labels'+ '.csv', 'a') as out_file:
@@ -44,8 +63,10 @@ def loadGraph():
 #            writer.writerow(["Old Label", "New Label"])                
 #            for n in list(G.nodes()):
 #                writer.writerow([G.nodes[n]['old_labels'], n]) 
+            
+                     
 
-    return G
+    return G, p
 
 
 

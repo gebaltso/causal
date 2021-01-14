@@ -15,6 +15,7 @@ import operator
 import time
 import sys
 import copy
+import csv
 from itertools import combinations
 from collections import Counter
 from loadGraph import loadGraph
@@ -34,14 +35,29 @@ def inComm(node, comm, G):
 ##########################################################################################
     
 # Load the graph
-G = loadGraph()
+G, p = loadGraph()
 
 # Number of nodes of the initial G 
-nodesLen = len(G.nodes())
+nodesLen = G.number_of_nodes()
 
-# Compute the best partition
-partition, Q = Louvain(G)
-print("Modularity of Louvain partioning is:", Q, "\n")
+# If p = False I do not have the partition
+if p == False:
+    # Compute the best partition
+    partition = Louvain(G)
+#    partition, Q = Louvain(G)
+#    print("Modularity of Louvain partioning is:", Q, "\n")
+else:
+    # I have already the initial partition
+    partition = defaultdict(dict)
+    
+    with open("datasets/aminerEdgelistWithComms.csv", 'r') as f:
+        csv_reader = csv.reader(f, delimiter=',')        
+        for row in csv_reader:
+            if int(row[0]) not in partition:
+                partition[int(row[0])] = int(row[2])
+            if int(row[1]) not in partition:
+                partition[int(row[1])] = int(row[3])            
+    partition = dict(partition)
 
 ##########################################################################################
 # For connecting and visualizing with Gephi api
@@ -59,7 +75,7 @@ communities = set(partition.values())
 communities_dict = {c: [k for k, v in partition.items() if v == c] for c in communities}
 
 # The initial query node
-initnode = 182
+initnode = 78100
 
 # The number of highest in-community degree values that I'll keep the nodes of to check for causals. E.g. if highNodes=3 means that I'll keep the 3 nodes with highest in-community degree to check for edge adding.
 highNodes = 4 
@@ -151,7 +167,8 @@ for cardinality in range(1,4):
         for e in CausalEdges:
             testG.add_edge(e[0], e[1])
         
-            partition2, Q2 = Louvain(testG)
+            partition2 = Louvain(testG)
+#            partition2, Q2 = Louvain(testG)
             if partition2[initnode] != partition[initnode]:
                 # Means that the query node changed community      
                 rankOfCausals = resAndDis(partition, partition2, initnode, contigencyLen, nodesLen, rankOfCausals, e)
@@ -169,8 +186,9 @@ for cardinality in range(1,4):
         comb = list(combinations(CausalEdges, cardinality))
         for e in comb:
             testG.add_edge(e[0][0], e[0][1])
-            testG.add_edge(e[1][0], e[1][1])            
-            partition2, Q2 = Louvain(testG)
+            testG.add_edge(e[1][0], e[1][1])
+            partition2 = Louvain(testG)            
+#            partition2, Q2 = Louvain(testG)
             if partition2[initnode] != partition[initnode]:
                 # Means that the query node changed community
                 rankOfCausals = resAndDis(partition, partition2, initnode, contigencyLen, nodesLen, rankOfCausals, e)
@@ -191,8 +209,9 @@ for cardinality in range(1,4):
             for e in comb:
                 testG.add_edge(e[0][0], e[0][1])
                 testG.add_edge(e[1][0], e[1][1])
-                testG.add_edge(e[2][0], e[2][1])                
-                partition2, Q2 = Louvain(testG)
+                testG.add_edge(e[2][0], e[2][1])
+                partition2 = Louvain(testG)                
+#                partition2, Q2 = Louvain(testG)
                 if partition2[initnode] != partition[initnode]:
                     # Means that the query node changed community
                     rankOfCausals = resAndDis(partition, partition2, initnode, contigencyLen, nodesLen, rankOfCausals, e)
@@ -239,9 +258,9 @@ for e in addList:
     else:
         G.add_edge(e[0],e[1])
 
-
-partitionF, QF = Louvain(G)
-print("Modularity of new Louvain partioning is:", QF, "\n")
+partitionF = Louvain(G)
+#partitionF, QF = Louvain(G)
+#print("Modularity of new Louvain partioning is:", QF, "\n")
 
 ###########################################################################################
 

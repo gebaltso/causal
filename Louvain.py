@@ -15,10 +15,14 @@ import sys
 
 
 
+
+
 def Louvain(G):
     
+   
     partition = community_louvain.best_partition(G, randomize=False)
-    modularity = community_louvain.modularity(partition, G)
+    
+#    modularity = community_louvain.modularity(partition, G)
     
 #    comm = pd.DataFrame(partition.items(), columns=['node', 'cluster'], dtype=int)    
 #    groups = comm.groupby('cluster')['node'].apply(list)
@@ -43,6 +47,8 @@ def Louvain(G):
 #    #plt.savefig("plot.png", dpi=1000)
 #    plt.show()
     
-    return partition, modularity
+#    return partition, modularity
+    
+    return partition
 
 
