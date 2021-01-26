@@ -22,6 +22,7 @@ from FindEndogenousViaRandomWalks import endogenous
 from rankMetricM import rankMetricM
 from rankMetricRC import rankMetricRC
 from ResAndDis import resAndDis
+from igraph import *
 
 
 
@@ -51,12 +52,16 @@ else:
     partition = dict(partition)
 
 
+
+
 ##########################################################################################
 ## For connecting and visualizing with Gephi api
-#stream = streamer.Streamer(streamer.GephiWS(hostname="localhost",port=8080,workspace="workspace1"))
+#stream = streamer.Streamer(streamer.GephiWS(hostname="localhost",port=8080,workspace="workspace5"))
 #for source, target in G.edges():   
-#    node_source = graph.Node(source, size=50, community=partition[source], label=G.nodes[source]['old_labels'])
-#    node_target = graph.Node(target, size=50, community=partition[target], label=G.nodes[target]['old_labels'])
+#    node_source = graph.Node(source, size=50, community=partition[source]) #for Aminer
+#    node_target = graph.Node(target, size=50, community=partition[target]) #for Aminer
+##    node_source = graph.Node(source, size=50, community=partition[source], label=G.nodes[source]['old_labels'])
+##    node_target = graph.Node(target, size=50, community=partition[target], label=G.nodes[target]['old_labels'])
 #    stream.add_node(node_source,node_target)
 #    stream.add_edge(graph.Edge(node_source,node_target, directed=False))
 #time.sleep(1) #It might be possible the script runs too fast and last action arn't sent properly
@@ -70,7 +75,7 @@ communities_dict = {c: [k for k, v in partition.items() if v == c] for c in comm
 initnode = 78100
  
 # select how to compute the endogenous set
-method = 'incident' # Select among 'exo' for exogenously given edges, 'random' for random walk, 
+method = 'incomm' # Select among 'exo' for exogenously given edges, 'random' for random walk, 
 #'incident' for all edges incident to query node, 'incomm' for edges inside the same community as the query node
 # random is the most time consuming
 
@@ -113,6 +118,7 @@ elif method == 'incomm':
     # Create flat list to make one list from a list with lists    
     community = [item for sublist in communityTmp for item in sublist]
     
+    
     endoEdges = []
     for i in community:
         for j in community:
@@ -122,14 +128,14 @@ elif method == 'incomm':
         
     endoNodes = set(itertools.chain.from_iterable(list(endoEdges)))
     
+
+    
     if initnode in endoNodes:
         endoNodes.remove(initnode) # remove the initial node as G.edges include it
-    else:
-        process = input("The initial node does not have any neighbour into its community. Should the process continue?")
-        if process == "no":
-            sys.exit()
+
         
 print("Endogenous edges found.\n")
+sys.exit()
 ###########################################################################################
 
 # Dictionary to keep nodes of endoNodes and their corresponding M values
