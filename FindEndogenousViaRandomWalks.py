@@ -15,6 +15,7 @@ from collections import defaultdict
 import copy
 import sys
 import random
+import igraph as ig
 
 def messagePropagation(n, N, k, G):
     
@@ -34,10 +35,22 @@ def messagePropagation(n, N, k, G):
         # s is the source node of the edge
         s = n
          
-        # find the adjacent nodes to node n        
-        neiOfn = list(G.neighbors(n))
-        deg = len(neiOfn)
-        
+        # find the adjacent nodes to node n 
+        neiOfn = G.neighbors(n)
+        incomNei = G.neighbors(n, mode="in")
+        outcomNei = G.neighbors(n, mode="out")
+
+#        neiOfn = G.neighbors(n, mode="out") # for incoming neis or out for outgoing neis
+    
+        if neiOfn == []: # If a node does not have any successors stop the procedure
+            break
+    
+#        neiOfn = list(G.neighbors(n))
+#        deg = len(neiOfn)
+#        deg = G.outdegree(n) 
+        deg = G.degree(n) #deg = G.indegree(n) for in degree of n, outdegree for out degree of n. 
+
+
 #        print("n=", n, "nei=", neiOfn, "deg=", G.degree[n], "adj=", list(G[n]))
         
         #calculate the possibility of visiting a neighbour node
@@ -45,10 +58,10 @@ def messagePropagation(n, N, k, G):
         for i in neiOfn:
             Pr[i] = 1/deg
             
-                
+        
         # find the next node in random way considering the probabilities of edges    
         n = (np.random.choice(list(Pr.keys()), p=list(Pr.values())))
-        
+    
         # t is the target node of the edge
         t = n
 
@@ -56,7 +69,10 @@ def messagePropagation(n, N, k, G):
         
         # addingEdge list has the endogenous edges
         if N != k:
-            addingEdge.append((s,t))
+            if t in incomNei:
+                addingEdge.append((t,s))
+            else:
+                addingEdge.append((s,t))
     
     return walk, addingEdge
     

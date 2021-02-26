@@ -12,15 +12,12 @@ import operator
 import math
 
 
-def FindComm(n, partition, communities_dict, G):
+def FindComm(n, partition, memb, G):
     
     # Find the community C that node n belongs
-    C = partition.get(n)
-    
+    C = memb[n]
     # Find all the nodes of community C (n belongs to C)
-    communityTmp =  [v for k, v in communities_dict.items() if k == C]    
-    # Create flat list to make one list from a list with lists    
-    community = [item for sublist in communityTmp for item in sublist]
+    community = [i for i, e in enumerate(memb) if e == C]
     
     return community
     
@@ -33,7 +30,7 @@ def FinddegInAndMaxDeg(community, G):
         
     for i in degInC:
         for j in community:
-            if G.has_edge(i, j):
+            if i in G.neighbors(j):
                 degInC[i] +=1
             
     # Keep the max value of the above dict
@@ -52,21 +49,23 @@ def Findkin(community, G):
         
     for i in kin:
         for j in community:
-            if G.has_edge(i,j):
-                kin[i].append(j)
+            if i in G.neighbors(j):
+                kin[i].append(j) 
     
     return kin
 
 
-def FindBasicForAll(n, partition, communities_dict, G):
+def FindBasicForAll(n, partition, memb, G):
     
-    # The community that node n belongs
-    community = FindComm(n, partition, communities_dict, G)
-#    print("Comm = ", community)
+    # Find the community C that node n belongs
+    C = memb[n]
+    # Find all the nodes of community C (n belongs to C)
+    community = [i for i, e in enumerate(memb) if e == C]
     
     # The degree into community of n and
     # the maximum degree inside this community
     degInC, maxDegInC = FinddegInAndMaxDeg(community, G)
+#    print(degInC)
     
     # The dictionary kin contains the nodes of community of
     # n and their neighbours only inside community
@@ -78,30 +77,34 @@ def FindBasicForAll(n, partition, communities_dict, G):
 def Rccomputation(n, degInC, maxDegInC):
     # Compute metric RC for node = n
     RCn = math.log(degInC[n]+1)/math.log(maxDegInC+1)
-    
+#    print("RCn=", RCn, "degInC=", degInC[n],"maxDegInC=", maxDegInC )
     return RCn
 
 
 
 ###############################################################################
 
-def rankMetricRC(n, partition, communities_dict, G):
+def rankMetricRC(n, partition, memb, G):
     
     # Find all the basic values
-    community, degInC, maxDegInC, kin = FindBasicForAll(n, partition, communities_dict, G)
-#    print("community of initial node= ", community)
+    community, degInC, maxDegInC, kin = FindBasicForAll(n, partition, memb, G)
     
     # Compute RC of node n
     RCn = Rccomputation(n, degInC, maxDegInC)
+    
     
     # Compute the nominator of RC
     nom = 0
     # for each neighbor of n compute the RC and sum all the RCs
     for i in kin[n]:
         nom = nom + Rccomputation(i, degInC, maxDegInC)
-     
+ 
+        
     # Find all the neighbours of node n
-    nei = [i for i in G[n]]
+#    nei1 = [i for i in G[n]]
+#    nei2 = [i for i in G.predecessors(n)]
+#    nei = nei1 + nei2
+    nei = G.neighbors(n)
 #    print("Neigbhours= ", nei)
 
     
@@ -114,7 +117,7 @@ def rankMetricRC(n, partition, communities_dict, G):
     
     dem2 = 0
     for i in extNei:
-        community, degInC, maxDegInC, kin = FindBasicForAll(i, partition, communities_dict, G)
+        community, degInC, maxDegInC, kin = FindBasicForAll(i, partition, memb, G)
         for j in kin[i]:
             dem2 = dem2 + Rccomputation(j, degInC, maxDegInC)
     

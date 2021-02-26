@@ -7,55 +7,42 @@ Created on Thu Oct 29 16:41:34 2020
 """
 
 import networkx as nx
+import sys
 import os
 import csv
 from collections import defaultdict
+from igraph import *
 
 
-def loadGraph():
+def loadGraph(edgeFile):
     
+    # igraph load edgelist from csv
+    G = Graph.Read_Ncol(edgeFile, directed=False)
     
-    myFile = "datasets/aminerEdgelist.csv"
-#    myFile = "datasets/finalB.csv"
+    G.vs["id"] = G.vs["name"]
     
-    if myFile == "datasets/aminerEdgelist.csv":
-        p = True
-    else:
-        p = False
+#    print(G.vcount())
+#    print(G.ecount())
     
-#    G = nx.read_edgelist("hdnEdgelist.csv", create_using=nx.Graph(), delimiter=",", encoding='utf-8-sig') #human disease network with 1419 nodes and 2738 edges
-#    G = nx.read_edgelist("hdnDiseaseEdgelist.csv", create_using=nx.Graph(), delimiter=",", encoding='utf-8-sig') #human disease network with 516 nodes and 1188 edges
-#    G = nx.read_edgelist("yeastEdgelist.csv", create_using=nx.Graph(), delimiter=",", encoding='utf-8-sig') #protein protein interaction network with 2361 nodes and 7182 edges/6646 without self loops
-    G = nx.read_edgelist(myFile, create_using=nx.Graph(), delimiter=",", encoding='utf-8-sig') #network scientists coauthorship network with 1461 nodes and 2742 edges    / Largest component 379 nodes 914 edges
-#    G = nx.karate_club_graph() # 34 nodes 78 edges
-#    G = nx.les_miserables_graph() # 77 nodes 254 edges
-#    G = nx.read_adjlist('datasets/ca-GrQc.txt', delimiter='\t') # 5242 nodes 14496 edges
+#    nodes = G.vs.indices
+#    print([G.vs[4707]['name']])
+#    print([G.vs[1674]['name']])
+#    print([G.vs[5107]['name']])
+#    print([G.vs[4372]['name']])
+#    print([G.vs[3870]['name']])
+#    print([G.vs[537]['name']])
+#    print([G.vs[536]['name']])
+#    print([G.vs[533]['name']])
+#    print([G.vs[4879]['name']])
+#    print([G.vs[3686]['name']])
+#    print([G.vs[603]['name']])
+#    print([G.vs[11909]['name']])
     
-    # To remove self loops
-#    G.remove_edges_from(nx.selfloop_edges(G))
-    
-#    print(G.number_of_nodes())
-#    print(G.number_of_edges())
-#   
+#    print(G.vs.find(name="2801"))
+#    print(G.vs.find(name="47957"))
+
 #    sys.exit()
     
-
-    # Check if node ids are integers. If not convert them to integers
-    if all(isinstance(n, int) for n in list(G.nodes)):
-        print(" ")      
-    else:
-        if p == True:
-            mapping = defaultdict(dict)
-            with open(myFile, 'r') as f:
-                csv_reader = csv.reader(f, delimiter=',')        
-                for row in csv_reader:
-                    mapping[row[0]] = int(row[0])
-                    mapping[row[1]] = int(row[1]) 
-            G = nx.relabel_nodes(G, mapping, copy=False)
-        else:
-            start = 0
-            G = nx.convert_node_labels_to_integers(G,first_label=start,ordering='sorted', label_attribute='old_labels')
-
 #    # Write new and old labels in a file
 #    with open('datasets/labels/labels'+ '.csv', 'a') as out_file:
 #        writer = csv.writer(out_file, delimiter=';')            
@@ -63,10 +50,9 @@ def loadGraph():
 #            writer.writerow(["Old Label", "New Label"])                
 #            for n in list(G.nodes()):
 #                writer.writerow([G.nodes[n]['old_labels'], n]) 
-            
-                     
+    
 
-    return G, p
+    return G
 
 
 

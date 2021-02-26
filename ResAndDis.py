@@ -8,14 +8,14 @@ Created on Fri Dec  4 12:06:28 2020
 
 
 
-def resAndDis(partition, partition2, initnode, contigencyLen, nodesLen, rankOfCausals, e):
+def resAndDis(memb, memb2, initnode, contigencyLen, nodesLen, rankOfCausals, e):
                  
    res = 1/(1+contigencyLen)
    # Find all the nodes that have changed communities
    nodesChanged = []
-   for i in partition:
-       if partition2[i] != partition[i]:
-           nodesChanged.append(i)
+   for i in range(len(memb)):
+       if memb2[i] != memb[i]:
+           nodesChanged.append(i) 
    if initnode in nodesChanged:
         nodesChanged.remove(initnode)
         dis = len(nodesChanged)/((nodesLen)-1)
