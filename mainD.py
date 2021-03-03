@@ -27,7 +27,11 @@ from initPartition import initPartition
 import cdlib
 import random
 from jaccard import jaccard
-
+import networkx as nx
+from sklearn.metrics.cluster import normalized_mutual_info_score
+from sklearn.metrics.cluster import adjusted_rand_score
+from sklearn.metrics.cluster import rand_score
+from sklearn.metrics.cluster import adjusted_mutual_info_score
 
 
 edgeFile = "datasets/polbooksEdgelist.csv" #105 nodes 441 edges
@@ -67,10 +71,10 @@ Gx = G.to_networkx()
 
 # The initial query node
 #150, 1030, 1312 works for cora
-initnode = 29
+initnode = 68
  
 # select how to compute the endogenous set
-method = 'random' # Select among 'exo' for exogenously given edges, 'random' for random walk, 
+method = 'incident' # Select among 'exo' for exogenously given edges, 'random' for random walk, 
 #'incident' for all edges incident to query node, 'incomm' for edges inside the same community as the query node
 # random is the most time consuming
 
@@ -444,7 +448,12 @@ for k in range(0,4942):
         print(k)
 
 
+#for v in nx.optimize_graph_edit_distance(Gx,GxF):
+#    minv = v
+#
+#print("Edit distance:", minv)
 
-
-
-
+print("NMI=", normalized_mutual_info_score(memb,membF))
+print("ARI=", adjusted_rand_score(memb,membF))
+print("RI=", rand_score(memb,membF))
+print("AMI=", adjusted_mutual_info_score(memb,membF))

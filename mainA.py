@@ -27,6 +27,10 @@ from ResAndDis import resAndDis
 import igraph as ig
 from initPartition import initPartition
 from jaccard import jaccard
+from sklearn.metrics.cluster import normalized_mutual_info_score
+from sklearn.metrics.cluster import adjusted_rand_score
+from sklearn.metrics.cluster import rand_score
+from sklearn.metrics.cluster import adjusted_mutual_info_score
 
 ##########################################################################################
 def inComm(node, comm, G):
@@ -367,5 +371,7 @@ for k in range(0,4942):
         print(k)
 
 
-
-
+print("NMI=", normalized_mutual_info_score(memb,membF))
+print("ARI=", adjusted_rand_score(memb,membF))
+print("RI=", rand_score(memb,membF))
+print("AMI=", adjusted_mutual_info_score(memb,membF))
